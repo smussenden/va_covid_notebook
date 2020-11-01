@@ -99,36 +99,3 @@ sheet_write(va_covid, ss = "1DKWdaJPX0q3tKIbq6LLhnOrO0_Ws5adusI71OEdiuFM", sheet
 
 
 ```
-Albemarle
-Chesterfield
-Franklin County
-Goochland
-Hanover
-James City
-King and Queen
-Mecklenburg
-Montgomery
-Norfolk
-Northampton
-Portsmouth
-Powhatan
-Surry
-Warren
-Winchester
-
-glimpse(va_covid_cases)
-
-```
-
-```{r}
-x <- va_covid_cases %%
-  
-  
-  
-  
-```
-
-
-
-
-```
