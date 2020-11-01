@@ -1,0 +1,122 @@
+---
+title: "va_covid_cases"
+author: "Sean Mussenden"
+date: "11/1/2020"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Load Libraries
+
+```{r}
+library(tidyverse)
+library(janitor)
+library(lubridate)
+library(gargle)
+library(googlesheets4)
+
+```
+
+## Load Data
+
+```{r}
+
+# Establish dates to grab
+current_week <- Sys.Date()
+previous_week <- current_date - 7 
+
+# Establish list of locations to grab
+locations <- c("Albemarle", "Chesterfield", "Franklin County", "Goochland", "Hanover", "James City", "King and Queen", "Mecklenburg", "Montgomery", "Norfolk", "Northampton", "Portsmouth",
+"Powhatan", "Surry", "Warren", "Winchester")
+
+fips_list <- c("51003", "51041", "51067", "51075", "51085", "51095", "51097", "51117", "51121", "51131", "51145", "51181", "51187", "51710", "51740", "51840")
+
+# Load data, clean it up
+va_covid_raw <- read_csv("https://data.virginia.gov/api/views/bre9-aqqr/rows.csv") %>%
+  clean_names() %>%
+  mutate(fips = as.character(fips)) %>%
+  mutate(report_date = mdy(report_date)) 
+
+# Write latest version of entire data set out to a Google Sheet
+
+# Filter to get only current week and previous week for locations we care about
+
+va_covid_select <- va_covid_raw %>%
+  filter(report_date == current_week | report_date == previous_week) %>%
+  filter(fips %in% fips_list) 
+
+# Write latest version of recent dates and locations we care about to Google sheet
+
+# Further clean the data in preparation for creating tables for hospitalizations before we pivot. 
+
+va_covid <- va_covid_select %>%
+  select(fips, locality, report_date, everything(), -vdh_health_district) %>%
+  mutate(report_date = case_when(
+      report_date == current_week ~ "current_week",
+      TRUE ~ "previous_week"
+  ))
+
+# Create va_covid_cases 
+va_covid_cases <- va_covid %>%
+  select(fips, locality, report_date, total_cases) %>%
+  pivot_wider(names_from = report_date, values_from = total_cases) %>%
+  rename(previous_week_cases = previous_week,
+         current_week_cases = current_week) %>%
+  mutate(new_cases_this_week = current_week_cases-previous_week_cases,
+         pct_change_cases_this_week = new_cases_this_week/previous_week_cases*100)
+
+# Create va_covid_deaths 
+va_covid_deaths <- va_covid %>%
+  select(fips, locality, report_date, deaths) %>%
+  pivot_wider(names_from = report_date, values_from = deaths) %>%
+  rename(previous_week_deaths = previous_week,
+         current_week_deaths = current_week) %>%
+  mutate(new_deaths_this_week = current_week_deaths-previous_week_deaths,
+         pct_change_deaths_this_week = new_deaths_this_week/previous_week_deaths*100)
+
+# Join back together
+
+va_covid <- va_covid_cases %>%
+  inner_join(va_covid_deaths)
+
+# Write calculation sheet to Google sheets
+
+
+
+```
+Albemarle
+Chesterfield
+Franklin County
+Goochland
+Hanover
+James City
+King and Queen
+Mecklenburg
+Montgomery
+Norfolk
+Northampton
+Portsmouth
+Powhatan
+Surry
+Warren
+Winchester
+
+glimpse(va_covid_cases)
+
+```
+
+```{r}
+x <- va_covid_cases %%
+  
+  
+  
+  
+```
+
+
+
+
+```
